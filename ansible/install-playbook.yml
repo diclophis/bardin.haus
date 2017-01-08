@@ -1,0 +1,79 @@
+---
+- hosts: bardin-haus
+  vars_files:
+    - vars/bardin-haus.yml
+  tasks:
+
+# baseline
+    - name: set hostname
+      become: true
+      hostname: name={{ bardin_haus_naked_domain }}
+
+    - name: ensure aptitude is installed
+      become: true
+      apt: pkg=aptitude state=present
+
+    - name: install sources.list
+      become: true
+      copy: src=files/xenial-sources.list dest=/etc/apt/sources.list
+
+    - name: update and safe upgrade apt-get packages
+      become: true
+      apt: update_cache=true cache_valid_time=60 upgrade=safe
+
+    - name: install main system packages (1/2)
+      apt: pkg={{ item }} state=present
+      become: true
+      with_items:
+        - unattended-upgrades
+        - apt-transport-https
+        - build-essential
+        - git
+        - screen
+        - vim
+        - psmisc
+        - curl
+        - zip
+        - rsync
+        - wget
+        - htop
+        - tree
+        - mailutils
+        - console-setup
+        - kbd
+        - xkb-data
+        - man-db
+        - libc-bin
+        - dnsutils
+        - pv
+        - libssl1.0.0
+        - openssl
+        - libssl-dev
+        - update-manager-core
+        - update-notifier-common
+        - libpcap0.8
+        - tcpdump
+        - aptitude
+        - python-setuptools
+        - libc6-dev
+        - g++
+        - zlib1g-dev
+        - python-pkg-resources
+        - iftop
+        - nethogs
+        - gcc
+        - make
+        - autoconf
+        - autogen
+        - automake
+        - pkg-config
+        - libcgmanager-dev
+        - libcgmanager0
+        - libcgroup-dev
+        - libcgroup1
+        - libpam-cgfs
+        - lxc-common
+        - lxc-dev
+        - lxc-templates
+        - lxc1
+        - liblxc1

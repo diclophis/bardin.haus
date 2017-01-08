@@ -1,0 +1,2 @@
+[bardin-haus]
+52.8.214.35 ansible_ssh_user=ubuntu

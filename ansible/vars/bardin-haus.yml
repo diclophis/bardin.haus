@@ -1,0 +1,5 @@
+---
+bardin_haus_ami: ami-b05203d0
+bardin_haus_naked_domain: bardin.haus
+bardin_haus_ec2_group: bardin-haus-security-group
+bardin_haus_instance_name: bardin-haus

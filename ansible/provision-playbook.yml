@@ -1,0 +1,90 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - vars/bardin-haus.yml
+  tasks:
+    - name: determine public ip
+      shell: "dig +short myip.opendns.com @resolver1.opendns.com"
+      register: public_ip_result
+
+    - set_fact:
+        public_ip: "{{ public_ip_result.stdout }}"
+
+    - debug: msg="{{ public_ip }}"
+
+    #- ec2_vpc:
+    #    region: us-west-1
+    #    internet_gateway: yes
+
+    - ec2_group:
+        name: "{{ bardin_haus_ec2_group }}"
+        description: allows SSH and HTTP only
+        vpc_id: vpc-63e51e07
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: "{{ public_ip }}/32"
+          - proto: tcp
+            from_port: 9200
+            to_port: 9200
+            cidr_ip: "{{ public_ip }}/32"
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "{{ public_ip }}/32"
+          - proto: tcp
+            from_port: 19999
+            to_port: 19999
+            cidr_ip: "{{ public_ip }}/32"
+
+    - ec2:
+        assign_public_ip: true
+        vpc_subnet_id: subnet-3339b257
+        instance_type: c4.xlarge
+        image: "{{ bardin_haus_ami }}"
+        keypair: "{{ lookup('ENV', 'EC2_KEYPAIR') }}"
+        volumes:
+          - device_name: /dev/sda1
+            device_type: gp2
+            volume_size: "1000"
+        exact_count: 1
+        wait: yes
+        group: "{{ bardin_haus_ec2_group }}"
+        instance_tags:
+          Name: "{{ bardin_haus_instance_name }}"
+        count_tag:
+          Name: "{{ bardin_haus_instance_name }}"
+      register: instance
+
+    - name: "provision naked DNS"
+      route53:
+        command: create
+        zone: "{{ bardin_haus_naked_domain }}"
+        record: "{{ bardin_haus_naked_domain }}"
+        type: A
+        ttl: 60
+        value: "{{ instance.tagged_instances[0].public_ip }}"
+        overwrite: true
+
+    - name: "provision wildcard DNS"
+      route53:
+        command: create
+        zone: "{{ bardin_haus_naked_domain }}"
+        record: "*.{{ bardin_haus_naked_domain }}"
+        type: CNAME
+        ttl: 60
+        value: "{{ bardin_haus_naked_domain }}"
+        overwrite: true
+
+    - name: "set bardin_haus_host"
+      set_fact:
+        bardin_haus_host: "{{ instance.tagged_instances[0].public_ip }}"
+
+    - name: "create bardin-haus inventory"
+      template: src=templates/inventory.j2 dest=ansible/inventory/bardin-haus

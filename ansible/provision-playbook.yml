@@ -44,6 +44,7 @@
             cidr_ip: "{{ public_ip }}/32"
 
     - ec2:
+        user_data: "{{ lookup('file', 'files/user_data.sh') }}"
         assign_public_ip: true
         vpc_subnet_id: subnet-3339b257
         instance_type: c4.xlarge

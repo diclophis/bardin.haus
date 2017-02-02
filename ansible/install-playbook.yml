@@ -77,3 +77,26 @@
         - lxc-templates
         - lxc1
         - liblxc1
+        - nodejs
+        - npm
+
+#cloud-init.target.wants/     http-to-kubernetes.service   network-online.target.wants/ sysinit.target.wants/
+#default.target.wants/        http-to-kubernetes.socket    paths.target.wants/          syslog.service
+#docker.service.d/            iscsi.service                shutdown.target.wants/       timers.target.wants/
+#getty.target.wants/          kubelet.service.d/           sockets.target.wants/        
+#graphical.target.wants/      multi-user.target.wants/     sshd.service                 
+#ubuntu@bardin:~/bespoked$ cat /etc/systemd/system/http-to-kubernetes.s*
+#[Unit]
+#Requires=kubelet.service
+#
+#
+#[Service]
+#ExecStart=/lib/systemd/systemd-socket-proxyd localhost:30001
+#PrivateTmp=yes
+##PrivateNetwork=yes
+#JoinsNamespaceOf=kubelet.service
+#[Socket]
+#ListenStream=80
+#
+#[Install]
+#WantedBy=sockets.target

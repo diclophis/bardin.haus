@@ -90,10 +90,8 @@
     - name: "create bardin-haus inventory"
       template: src=templates/inventory.j2 dest=ansible/inventory/bardin-haus
 
-    - debug: msg="{{ ansible_host }}:{{ ansible_port|default(22) }}"
-
-    - name: Wait for SSH to come up
-      wait_for: host={{ bardin_haus_host }} port={{ ansible_port|default(22) }} delay=5 connect_timeout=5 timeout=30 state=started
+    #- name: Wait for SSH to come up
+    #  wait_for: host={{ bardin_haus_host }} port={{ ansible_port|default(22) }} connect_timeout=1 timeout=30 state=started
 
     - name: add known hosts
       shell: "grep '{{ bardin_haus_host }} ' ~/.ssh/known_hosts || ssh-keyscan {{ bardin_haus_host }} >> ~/.ssh/known_hosts"

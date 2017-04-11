@@ -88,6 +88,8 @@
         - lxc-templates
         - lxc1
         - liblxc1
+        - nodejs
+        - npm
         - ca-certificates
         - docker.io
         - kubelet
@@ -109,8 +111,38 @@
       become: true
       shell: kubeadm init --cloud-provider aws
 
-    - name: allow scheduling on master node hax
-      shell: kubectl taint nodes bardin.haus dedicated-
-    
+    - name: install kubectl config
+      become: true
+      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/ owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+
+    # https://github.com/kubernetes/kubernetes/issues/43815#issuecomment-291573635
+    # https://www.weave.works/docs/net/latest/kube-addon/#install
     - name: install network
-      shell: kubectl apply -f https://git.io/weave-kube
+      become: true
+      shell: kubectl apply -f https://git.io/weave-kube-1.6
+
+    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
+    - name: allow scheduling on master node
+      become: true
+      shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+#cloud-init.target.wants/     http-to-kubernetes.service   network-online.target.wants/ sysinit.target.wants/
+#default.target.wants/        http-to-kubernetes.socket    paths.target.wants/          syslog.service
+#docker.service.d/            iscsi.service                shutdown.target.wants/       timers.target.wants/
+#getty.target.wants/          kubelet.service.d/           sockets.target.wants/        
+#graphical.target.wants/      multi-user.target.wants/     sshd.service                 
+#ubuntu@bardin:~/bespoked$ cat /etc/systemd/system/http-to-kubernetes.s*
+#[Unit]
+#Requires=kubelet.service
+#
+#
+#[Service]
+#ExecStart=/lib/systemd/systemd-socket-proxyd localhost:30001
+#PrivateTmp=yes
+##PrivateNetwork=yes
+#JoinsNamespaceOf=kubelet.service
+#[Socket]
+#ListenStream=80
+#
+#[Install]
+#WantedBy=sockets.target

@@ -107,7 +107,7 @@
 
     - name: init kubeadm
       become: true
-      shell: kubeadm init
+      shell: kubeadm init --cloud-provider aws
 
     - name: allow scheduling on master node hax
       shell: kubectl taint nodes bardin.haus dedicated-

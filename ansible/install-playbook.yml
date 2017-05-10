@@ -109,7 +109,7 @@
 
     - name: init kubeadm
       become: true
-      shell: kubeadm init --cloud-provider aws
+      shell: kubeadm init --config /home/{{ ansible_ssh_user }}/kube-config.yml #--skip-preflight-checks # --cloud-provider aws
 
     - name: install kubectl config
       become: true
@@ -118,13 +118,12 @@
     # https://github.com/kubernetes/kubernetes/issues/43815#issuecomment-291573635
     # https://www.weave.works/docs/net/latest/kube-addon/#install
     - name: install network
-      become: true
-      shell: kubectl apply -f https://git.io/weave-kube-1.6
+      shell: KUBECONFIG=/home/ubuntu/admin.conf kubectl apply -f https://git.io/weave-kube-1.6
 
     # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
     - name: allow scheduling on master node
       become: true
-      shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+      shell: KUBECONFIG=/home/ubuntu/admin.conf kubectl taint nodes --all node-role.kubernetes.io/master-
 
 #cloud-init.target.wants/     http-to-kubernetes.service   network-online.target.wants/ sysinit.target.wants/
 #default.target.wants/        http-to-kubernetes.socket    paths.target.wants/          syslog.service

@@ -17,31 +17,15 @@
     #    region: us-west-1
     #    internet_gateway: yes
 
-    - ec2_group:
-        name: "{{ bardin_haus_ec2_group }}"
-        description: allows SSH and HTTP only
-        vpc_id: vpc-63e51e07
-        rules:
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 443
-            to_port: 443
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 9200
-            to_port: 9200
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 19999
-            to_port: 19999
-            cidr_ip: "{{ public_ip }}/32"
+#    - ec2_group:
+#        name: "{{ bardin_haus_ec2_group }}"
+#        description: allows SSH and HTTP only
+#        vpc_id: vpc-63e51e07
+#        rules:
+#          - proto: tcp
+#            from_port: 22
+#            to_port: 22
+#            cidr_ip: "{{ public_ip }}/32"
 
     - ec2:
         user_data: "{{ lookup('file', 'files/user_data.sh') }}"

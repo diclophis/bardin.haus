@@ -17,31 +17,15 @@
     #    region: us-west-1
     #    internet_gateway: yes
 
-    - ec2_group:
-        name: "{{ bardin_haus_ec2_group }}"
-        description: allows SSH and HTTP only
-        vpc_id: vpc-63e51e07
-        rules:
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 443
-            to_port: 443
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 9200
-            to_port: 9200
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: "{{ public_ip }}/32"
-          - proto: tcp
-            from_port: 19999
-            to_port: 19999
-            cidr_ip: "{{ public_ip }}/32"
+#    - ec2_group:
+#        name: "{{ bardin_haus_ec2_group }}"
+#        description: allows SSH and HTTP only
+#        vpc_id: vpc-63e51e07
+#        rules:
+#          - proto: tcp
+#            from_port: 22
+#            to_port: 22
+#            cidr_ip: "{{ public_ip }}/32"
 
     - ec2:
         user_data: "{{ lookup('file', 'files/user_data.sh') }}"
@@ -67,21 +51,22 @@
       route53:
         command: create
         zone: "{{ bardin_haus_naked_domain }}"
-        record: "{{ bardin_haus_naked_domain }}"
+        record: "ops.{{ bardin_haus_naked_domain }}"
         type: A
         ttl: 60
         value: "{{ instance.tagged_instances[0].public_ip }}"
         overwrite: true
 
-    - name: "provision wildcard DNS"
-      route53:
-        command: create
-        zone: "{{ bardin_haus_naked_domain }}"
-        record: "*.{{ bardin_haus_naked_domain }}"
-        type: CNAME
-        ttl: 60
-        value: "{{ bardin_haus_naked_domain }}"
-        overwrite: true
+    #TODO: make this go to ELB from kubernetes
+    #- name: "provision wildcard DNS"
+    #  route53:
+    #    command: create
+    #    zone: "{{ bardin_haus_naked_domain }}"
+    #    record: "*.{{ bardin_haus_naked_domain }}"
+    #    type: CNAME
+    #    ttl: 60
+    #    value: "{{ bardin_haus_naked_domain }}"
+    #    overwrite: true
 
     - name: "set bardin_haus_host"
       set_fact:

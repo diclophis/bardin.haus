@@ -109,7 +109,7 @@
 
     - name: init kubeadm
       become: true
-      shell: kubeadm init --apiserver-advertise-address kubernetes.default.svc.bardin.haus --config /home/{{ ansible_ssh_user }}/kube-config.yml | tee -a /var/log/kubeadm-init.log
+      shell: kubeadm init --config /home/{{ ansible_ssh_user }}/kube-config.yml | tee -a /var/log/kubeadm-init.log
 
     - name: install kubectl config
       become: true

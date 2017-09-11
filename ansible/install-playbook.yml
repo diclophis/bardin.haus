@@ -7,7 +7,7 @@
 # baseline
     - name: set hostname
       become: true
-      hostname: name={{ bardin_haus_naked_domain }}
+      hostname: name=ops.{{ bardin_haus_naked_domain }}
 
     - name: ensure aptitude is installed
       become: true
@@ -83,11 +83,11 @@
         - libcgroup-dev
         - libcgroup1
         - libpam-cgfs
-        - lxc-common
-        - lxc-dev
-        - lxc-templates
-        - lxc1
-        - liblxc1
+        #- lxc-common
+        #- lxc-dev
+        #- lxc-templates
+        #- lxc1
+        #- liblxc1
         - nodejs
         - npm
         - ca-certificates

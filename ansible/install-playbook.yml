@@ -7,7 +7,8 @@
 # baseline
     - name: set hostname
       become: true
-      hostname: name=ops.{{ bardin_haus_naked_domain }}
+      #hostname: name=ops.{{ bardin_haus_naked_domain }}
+      hostname: name="ip-10-0-0-253.us-west-1.compute.internal"
 
     - name: ensure aptitude is installed
       become: true
@@ -93,35 +94,45 @@
         - kubernetes-cni
         - ruby
         - ruby-bundler
+        - ruby-dev
 
     - name: add ubuntu to docker group
       become: true
       user: name=ubuntu append=true groups=docker
 
-#    - name: reset kubeadm
-#      become: true
-#      shell: kubeadm reset
-#
-#    - name: init kubeadm
-#      become: true
-#      shell: kubeadm init --config /home/{{ ansible_ssh_user }}/kube-config.yml | tee -a /var/log/kubeadm-init.log
-#
-#    - name: install kubectl config
-#      become: true
-#      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/ owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
-#
-#    # https://github.com/kubernetes/kubernetes/issues/43815#issuecomment-291573635
-#    # https://www.weave.works/docs/net/latest/kube-addon/#install
-#    - name: install network
-#      shell: KUBECONFIG=/home/ubuntu/admin.conf kubectl apply -f https://git.io/weave-kube-1.6
-#
-#    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
-#    - name: allow scheduling on master node
-#      become: true
-#      shell: KUBECONFIG=/home/ubuntu/admin.conf kubectl taint nodes --all node-role.kubernetes.io/master-
-#
-#    - shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
-#      register: init
-#
-#      become: true
-#    - debug: msg={{ init.stdout.split('\n') }}
+    - name: install kube-config
+      copy: src="{{ item }}" dest="/var/tmp/{{ item }}"
+      with_items:
+        - kube-config.yml
+        - weave-kube-1.7.yml
+
+    - name: reset kubeadm
+      become: true
+      shell: kubeadm reset
+
+    - name: init kubeadm
+      become: true
+      shell: kubeadm init --config /var/tmp/kube-config.yml | tee -a /var/log/kubeadm-init.log
+
+    - file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+      become: true
+
+    - name: install kubectl config
+      become: true
+      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+
+    # https://www.weave.works/docs/net/latest/kube-addon/#install
+    - name: install network
+      become: true
+      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.7.yml
+
+    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
+    - name: allow scheduling on master node
+      become: true
+      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
+
+    - shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
+      become: true
+      register: init
+
+    - debug: msg={{ init.stdout.split('\n') }}

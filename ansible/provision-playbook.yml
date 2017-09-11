@@ -54,6 +54,7 @@
             to_port: 5100
             cidr_ip: 0.0.0.0/0
 
+    #TODO: automate => instance_profile_name: kubernetes
     - ec2:
         user_data: "{{ lookup('file', 'files/user_data.sh') }}"
         assign_public_ip: true

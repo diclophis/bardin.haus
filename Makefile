@@ -1,7 +1,8 @@
 # Makefile for common tasks
 
-provision:
+all:
 	sh provision.sh
+	sh install.sh
 
 nodes:
 	sh nodes.sh

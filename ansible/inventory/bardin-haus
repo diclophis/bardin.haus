@@ -1,2 +1,2 @@
 [bardin-haus]
-13.56.250.76 ansible_ssh_user=ubuntu
+13.56.209.100 ansible_ssh_user=ubuntu

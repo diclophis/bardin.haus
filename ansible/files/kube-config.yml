@@ -2,9 +2,10 @@ apiVersion: kubeadm.k8s.io/v1alpha1
 kind: MasterConfiguration
 cloudProvider: aws
 api:
-  advertiseAddress: kubernetes.default.svc.bardin.haus
-#networking:
-#  dnsDomain: bardin.haus
-#  bindPort: 6443
-#apiServerExtraArgs:
-#  "external-hostname": kubernetes.default.svc.bardin.haus
+  advertiseAddress: kubernetes.bardin.haus
+apiServerExtraArgs:
+  "external-hostname": kubernetes.bardin.haus
+controllerManagerExtraArgs:
+  "allow-untagged-cloud": "true"
+apiServerCertSANs:
+  - kubernetes.bardin.haus

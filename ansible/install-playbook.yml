@@ -104,7 +104,7 @@
       copy: src="{{ item }}" dest="/var/tmp/{{ item }}"
       with_items:
         - kube-config.yml
-        - weave-kube-1.7.yml
+        - weave-kube-1.8.yml
 
     - name: reset kubeadm
       become: true
@@ -124,7 +124,7 @@
     # https://www.weave.works/docs/net/latest/kube-addon/#install
     - name: install network
       become: true
-      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.7.yml
+      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.8.yml
 
     # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
     - name: allow scheduling on master node

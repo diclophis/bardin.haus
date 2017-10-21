@@ -8,7 +8,7 @@
     - name: set hostname
       become: true
       #hostname: name=ops.{{ bardin_haus_naked_domain }}
-      hostname: name="ip-10-0-0-253.us-west-1.compute.internal"
+      hostname: name="ec2-13-56-150-135.us-west-1.compute.amazonaws.com"
 
     - name: ensure aptitude is installed
       become: true

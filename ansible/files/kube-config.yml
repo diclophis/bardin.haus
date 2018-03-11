@@ -1,11 +1,12 @@
 apiVersion: kubeadm.k8s.io/v1alpha1
 kind: MasterConfiguration
 cloudProvider: aws
-nodeName: ip-10-0-0-253.us-west-1.compute.internal
-#api:
-#  advertiseAddress: kubernetes.bardin.haus
-#apiServerExtraArgs:
-#  "external-hostname": kubernetes.bardin.haus
+#nodeName: 10.0.0.253 # ec2-13-56-150-135.us-west-1.compute.amazonaws.com
+api:
+  advertiseAddress: 10.0.0.253 # ec2-13-56-150-135.us-west-1.compute.amazonaws.com
+apiServerExtraArgs:
+#  #"external-hostname": kubernetes.bardin.haus
+  "advertise-address": 10.0.0.253 # ec2-13-56-150-135.us-west-1.compute.amazonaws.com
 controllerManagerExtraArgs:
   "allow-untagged-cloud": "true"
 #apiServerCertSANs:

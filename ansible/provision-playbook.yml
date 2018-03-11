@@ -34,7 +34,7 @@
 
     - ec2_group:
         name: "{{ bardin_haus_ec2_group }}"
-        description: allows SSH and HTTP/S only
+        description: allows SSH and HTTP only
         vpc_id: "{{ provisioned_vpc.vpc.id }}"
         rules:
           - proto: tcp
@@ -58,7 +58,7 @@
             to_port: 5100
             cidr_ip: 0.0.0.0/0
 
-    #- fail: msg="halt"
+    - fail: msg="halt"
 
     #TODO: automate => instance_profile_name: kubernetes
     - ec2:

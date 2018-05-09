@@ -85,8 +85,6 @@
         - libcgroup-dev
         - libcgroup1
         - libpam-cgfs
-        - nodejs
-        - npm
         - ca-certificates
         - docker.io
         - kubelet

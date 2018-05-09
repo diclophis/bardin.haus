@@ -77,6 +77,7 @@
         group: "{{ bardin_haus_ec2_group }}"
         instance_tags:
           Name: "{{ bardin_haus_instance_name }}"
+          kubernetes.io/cluster/bardin-haus: shared
         count_tag:
           Name: "{{ bardin_haus_instance_name }}"
       register: instance

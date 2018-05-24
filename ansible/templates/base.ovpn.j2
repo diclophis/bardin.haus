@@ -1,0 +1,18 @@
+client
+dev tun
+proto udp
+remote vpn.bardin.haus 1194
+resolv-retry 30
+nobind
+persist-key
+persist-tun
+tls-client
+comp-lzo
+verb 1
+reneg-sec 0
+auth-nocache
+remote-cert-tls server
+key-direction 1
+single-session
+inactive 3600
+cipher AES-256-CBC

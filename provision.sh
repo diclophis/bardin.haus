@@ -5,4 +5,4 @@ set -e
 
 . ~/.bardin-haus-env.sh
 
-ansible-playbook -vvvv -i ansible/inventory/local ansible/provision-playbook.yml
+ansible-playbook -v -i ansible/inventory/local ansible/provision-playbook.yml

@@ -1,0 +1,137 @@
+#
+# /etc/sysctl.conf - Configuration file for setting system variables
+# See /etc/sysctl.d/ for additional system variables
+# See sysctl.conf (5) for information.
+#
+
+#kernel.domainname = example.com
+
+# Uncomment the following to stop low-level messages on console
+#kernel.printk = 3 4 1 3
+
+##############################################################3
+# Functions previously found in netbase
+#
+
+# Uncomment the next two lines to enable Spoof protection (reverse-path filter)
+# Turn on Source Address Verification in all interfaces to
+# prevent some spoofing attacks
+#net.ipv4.conf.default.rp_filter=1
+#net.ipv4.conf.all.rp_filter=1
+
+# Uncomment the next line to enable TCP/IP SYN cookies
+# See http://lwn.net/Articles/277146/
+# Note: This may impact IPv6 TCP sessions too
+#net.ipv4.tcp_syncookies=1
+
+# Uncomment the next line to enable packet forwarding for IPv4
+net.ipv4.ip_forward=1
+
+# Uncomment the next line to enable packet forwarding for IPv6
+#  Enabling this option disables Stateless Address Autoconfiguration
+#  based on Router Advertisements for this host
+#net.ipv6.conf.all.forwarding=1
+
+
+###################################################################
+# Additional settings - these settings can improve the network
+# security of the host and prevent against some network attacks
+# including spoofing attacks and man in the middle attacks through
+# redirection. Some network environments, however, require that these
+# settings are disabled so review and enable them as needed.
+#
+# Do not accept ICMP redirects (prevent MITM attacks)
+#net.ipv4.conf.all.accept_redirects = 0
+#net.ipv6.conf.all.accept_redirects = 0
+# _or_
+# Accept ICMP redirects only for gateways listed in our default
+# gateway list (enabled by default)
+# net.ipv4.conf.all.secure_redirects = 1
+#
+# Do not send ICMP redirects (we are not a router)
+#net.ipv4.conf.all.send_redirects = 0
+#
+# Do not accept IP source route packets (we are not a router)
+#net.ipv4.conf.all.accept_source_route = 0
+#net.ipv6.conf.all.accept_source_route = 0
+#
+# Log Martian Packets
+#net.ipv4.conf.all.log_martians = 1
+#
+
+# Max open files, OpenVZ on BBG prevents this, likely not needed
+# fs.file-max = 470669 65536
+# fs.epoll.max_user_instances = 4096
+
+# Increase number of incoming connections
+net.core.somaxconn = 16384
+
+# NOTE: see http://askubuntu.com/questions/272796/connecting-to-archive-ubuntu-com-takes-too-long
+# disabled due to apt-get update slowness.
+# net.ipv6.conf.all.disable_ipv6 = 1
+# net.ipv6.conf.default.disable_ipv6 = 1
+# net.ipv6.conf.lo.disable_ipv6 = 1
+
+# Turn on address space randomization - security is super important at BC
+kernel.randomize_va_space = 2
+
+# use the least amount of swap for RAM
+vm.swappiness = 1
+# vm.dirty_ratio = 80
+# vm.dirty_background_ratio = 5
+# vm.dirty_expire_centisecs = 12000
+# vm.overcommit_memory = 1
+
+# # Auto-reboot linux 3600 seconds after a kernel panic
+kernel.panic = 3600
+kernel.panic_on_oops = 3600
+kernel.unknown_nmi_panic = 3600
+kernel.panic_on_unrecovered_nmi = 3600
+kernel.panic_on_io_nmi = 3600
+
+# Security, don't dump setuid execs
+fs.suid_dumpable = 0
+
+# # ------ NETWORK SECURITY ------
+# 
+# # Turn on protection for bad icmp error messages
+# net.ipv4.icmp_ignore_bogus_error_responses = 1
+# 
+# # Turn on syncookies for SYN flood attack protection
+# net.ipv4.tcp_syncookies = 1
+# net.ipv4.tcp_max_syn_backlog = 8096
+# net.ipv4.tcp_synack_retries = 2
+# net.ipv4.tcp_syn_retries = 2
+# 
+# # Log suspicious packets, such as spoofed, source-routed, and redirect
+# net.ipv4.conf.all.log_martians = 1
+# net.ipv4.conf.default.log_martians = 1
+# 
+# # Disables these ipv4 features, not very legitimate uses
+# net.ipv4.conf.all.accept_source_route = 0
+# net.ipv4.conf.default.accept_source_route = 0
+# 
+# # ------ NETWORK PERFORMANCE ------
+# 
+# # Netflix 2014 recommendations
+# net.core.netdev_max_backlog = 5000
+# net.core.rmem_max = 16777216
+# net.core.wmem_max = 16777216
+# net.ipv4.tcp_wmem = 4096 12582912 16777216
+# net.ipv4.tcp_rmem = 4096 12582912 16777216
+# 
+# # Allow reusing sockets in TIME_WAIT state for new connections
+# net.ipv4.tcp_tw_reuse = 1
+# 
+# # Socket max connections waiting to get accepted; the listen() backlog.
+# # Default is 128.
+# net.core.somaxconn = 4096
+# 
+# # Decrease fin timeout. After telling the client we are closing, how long to wait for a FIN, ACK?
+# # Default is 60.
+# net.ipv4.tcp_fin_timeout = 10
+# 
+# # Avoid falling back to slow start after a connection goes idle
+# # keeps our cwnd large with the keep alive connections
+# net.ipv4.tcp_slow_start_after_idle = 0
+# EOF

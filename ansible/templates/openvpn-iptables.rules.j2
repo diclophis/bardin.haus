@@ -1,0 +1,18 @@
+*nat
+:PREROUTING ACCEPT [3:216]
+:INPUT ACCEPT [1:64]
+:OUTPUT ACCEPT [36:2580]
+:POSTROUTING ACCEPT [0:0]
+-A POSTROUTING -o eth0 -j MASQUERADE
+COMMIT
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i eth0 -p udp -m state --state NEW -m udp --dport 1194 -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+-A INPUT -d {{ ansible_eth0["ipv4"]["address"] }}/32 -p tcp -m tcp --dport 22 -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+COMMIT

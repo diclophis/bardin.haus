@@ -30,6 +30,10 @@
       become: true
       apt_repository: repo="deb http://apt.kubernetes.io/ kubernetes-xenial main" state=present
 
+    - name: ensure the openvpn apt repository is added
+      become: true
+      apt_repository: state=absent repo='deb http://build.openvpn.net/debian/openvpn/stable xenial main'
+
     - name: update and safe upgrade apt-get packages
       become: true
       apt: update_cache=true cache_valid_time=60 upgrade=safe
@@ -94,44 +98,186 @@
         - ruby
         - ruby-bundler
         - ruby-dev
+        - openvpn
+        - python-pip
+        - python-dev
+        - libssl-dev
+        - swig
+        - python-m2crypto
+        - python-urllib3
 
     - name: add ubuntu to docker group
       become: true
       user: name=ubuntu append=true groups=docker
 
     - name: install kube-config
-      copy: src="{{ item }}" dest="/var/tmp/{{ item }}"
+      copy: src={{ item }} dest=/var/tmp/{{ item }}
       with_items:
         - kube-config.yml
         - weave-kube-1.10.yml
 
-    - name: reset kubeadm
-      become: true
-      shell: kubeadm reset
+    #- name: reset kubeadm
+    #  become: true
+    #  shell: kubeadm reset
 
-    - name: init kubeadm
-      become: true
-      shell: kubeadm init --config /var/tmp/kube-config.yml | tee -a /var/log/kubeadm-init.log
+    #- name: init kubeadm
+    #  become: true
+    #  shell: kubeadm init --config /var/tmp/kube-config.yml | tee -a /var/log/kubeadm-init.log
 
-    - file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
-      become: true
+    #- file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+    #  become: true
 
-    - name: install kubectl config
-      become: true
-      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+    #- name: install kubectl config
+    #  become: true
+    #  copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
 
-    # https://www.weave.works/docs/net/latest/kube-addon/#install
-    - name: install network
-      become: true
-      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.10.yml
+    ## https://www.weave.works/docs/net/latest/kube-addon/#install
+    #- name: install network
+    #  become: true
+    #  shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.10.yml
 
-    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
-    - name: allow scheduling on master node
-      become: true
-      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
+    ## https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
+    #- name: allow scheduling on master node
+    #  become: true
+    #  shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
 
-    - shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
-      become: true
-      register: init
+    #- shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
+    #  become: true
+    #  register: init
 
-    - debug: msg={{ init.stdout.split('\n') }}
+    #- debug: msg={{ init.stdout.split('\n') }}
+
+    - name: install sysctl.conf
+      become: true
+      template: src=sysctl.conf.j2 dest=/etc/sysctl.conf owner=root group=root mode=0644 backup=yes
+
+    - name: reload sysctl
+      become: true
+      command: /sbin/sysctl -p
+
+    - name: install openvpn config
+      become: true
+      template: src=openvpn-server.conf.j2 dest=/etc/openvpn/server.conf
+
+    - name: copy iptables rules
+      become: true
+      template: src=openvpn-iptables.rules.j2 dest=/etc/openvpn/iptables.rules mode=700
+
+    - name: generate 2048bit DH key
+      become: true
+      shell: creates=/etc/openvpn/dh2048.pem openssl dhparam -out /etc/openvpn/dh2048.pem 2048
+
+    - become: true
+      shell: rm -Rf {{ item }}
+      with_items:
+        - /etc/ssl/private
+        - /etc/ssl/CA
+        - /etc/openvpn/tmp
+      when: false
+
+    - name: temp reset hard tokens for openvpn, if this ran.. the tokens are gone
+      become: true
+      shell: rm -Rf {{ item }}
+      with_items:
+        - /etc/ssl/private/vpn.bardin.haus.key
+        - /etc/ssl/private/vpn.bardin.haus.csr
+        - /etc/ssl/private/vpn.bardin.haus.pem
+        - /etc/ssl/CA
+        - /var/tmp/vpn.bardin.haus.ovpn
+      when: true
+
+    - name: create the directories to hold the CA certificate and related files
+      become: true
+      file: path={{ item }} state=directory
+      with_items:
+        - /etc/openvpn/tmp
+        - /etc/ssl/CA
+        - /etc/ssl/private
+        - /etc/ssl/private/newcerts
+
+    - name: ensure /etc/ssl/private is private
+      become: true
+      file: path=/etc/ssl/private owner=root group=root mode=0700
+
+    - name: ensure first serial number of certificate is present
+      become: true
+      copy: dest=/etc/ssl/CA/{{ item }} content="01" force=false
+      with_items:
+        - serial
+        - crlnumber
+
+    - name: ensure certificate index exists
+      become: true
+      copy: dest=/etc/ssl/CA/index.txt content="" force=false
+
+    - name: create self-signed config
+      become: true
+      template: src=wildcard.conf.j2 dest=/etc/ssl/private/wildcard.conf
+
+    - name: create root CA key/cert
+      become: true
+      command: creates=/etc/ssl/private/cakey.pem openssl req -config /etc/ssl/private/wildcard.conf -new -x509 -keyout /etc/ssl/private/cakey.pem -out /usr/local/share/ca-certificates/ca.bardin.haus.crt -days 365 -subj "/C=US/ST=Oregon/L=Portland/O=BARDINCA" -passout pass:01234567890123456789 -extensions for_ca_req
+
+    - name: create root self-signed CRL
+      become: true
+      command: openssl ca -gencrl -extensions v3_req -keyfile /etc/ssl/private/cakey.pem -cert /usr/local/share/ca-certificates/ca.bardin.haus.crt -out /etc/ssl/CA/ca.bardin.haus.crl -config /etc/ssl/private/wildcard.conf -passin pass:01234567890123456789 -policy policy_anything -batch
+
+    - name: update ca-certificates
+      become: true
+      command: update-ca-certificates --fresh
+
+    #### CLIENT
+    - name: create self-signed key
+      become: true
+      command: creates=/etc/ssl/private/vpn.bardin.haus.key openssl genrsa -out /etc/ssl/private/vpn.bardin.haus.key 2048
+
+    - name: create self-signed csr
+      become: true
+      shell: creates=/etc/ssl/private/vpn.bardin.haus.csr openssl req -new -out /etc/ssl/private/vpn.bardin.haus.csr -key /etc/ssl/private/vpn.bardin.haus.key -config /etc/ssl/private/wildcard.conf -extensions for_client_req -subj "/C=US/ST=Oregon/L=Portland/O=OPENVPN-CLIENT/CN=BARDIN"
+
+    - name: create self-signed cert client
+      become: true
+      command: creates=/etc/ssl/private/vpn.bardin.haus.pem openssl ca -in /etc/ssl/private/vpn.bardin.haus.csr -out /etc/ssl/private/vpn.bardin.haus.pem -config /etc/ssl/private/wildcard.conf -policy policy_anything -batch -passin pass:01234567890123456789 -extensions for_client_req
+
+    ##### SERVER
+    - name: create self-signed key
+      become: true
+      command: creates=/etc/ssl/private/vpns.bardin.haus.key openssl genrsa -out /etc/ssl/private/vpns.bardin.haus.key 2048
+
+    - become: true
+      file: mode=600 dest=/etc/ssl/private/vpns.bardin.haus.key
+
+    - name: create self-signed csr
+      become: true
+      shell: creates=/etc/ssl/private/vpns.bardin.haus.csr openssl req -new -out /etc/ssl/private/vpns.bardin.haus.csr -key /etc/ssl/private/vpns.bardin.haus.key -config /etc/ssl/private/wildcard.conf -extensions for_server_req -subj "/C=US/ST=Oregon/L=Portland/O=OPENVPN-SERVER/CN=BARDIN"
+
+    - name: create self-signed cert server
+      become: true
+      command: creates=/etc/ssl/private/vpns.bardin.haus.pem openssl ca -in /etc/ssl/private/vpns.bardin.haus.csr -out /etc/ssl/private/vpns.bardin.haus.pem -config /etc/ssl/private/wildcard.conf -policy policy_anything -batch -passin pass:01234567890123456789 -extensions for_server_req
+
+    - name: create tls-auth private key
+      become: true
+      shell: creates=/etc/ssl/private/tls-auth.key /usr/sbin/openvpn --genkey --secret /etc/ssl/private/tls-auth.key
+
+    - name: Install base ovpn config for clients
+      become: true
+      template: src=base.ovpn.j2 dest=/var/tmp/base.ovpn mode=0700
+
+    - become: true
+      copy: src=package-certs.sh dest=/usr/local/bin/package-certs.sh mode=700
+
+    - name: Create ovpn file
+      become: true
+      command: /usr/local/bin/package-certs.sh /var/tmp/base.ovpn /usr/local/share/ca-certificates/ca.bardin.haus.crt /etc/ssl/private/vpn.bardin.haus.pem /etc/ssl/private/vpn.bardin.haus.key /etc/ssl/private/tls-auth.key /var/tmp/vpn.bardin.haus.ovpn
+
+    - name: copy ovpn file into ansible workstation
+      become: true
+      fetch: src=/var/tmp/vpn.bardin.haus.ovpn dest='files/vpn.bardin.haus.ovpn' flat=yes
+
+    #- name: restore iptables rules
+    #  become: true
+    #  shell: "iptables-restore < /etc/openvpn/iptables.rules"
+
+    #- name: restart openpvn service
+    #  become: true
+    #  service: name=openvpn state=restarted enabled=true

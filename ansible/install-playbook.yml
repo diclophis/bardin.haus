@@ -7,8 +7,6 @@
 # baseline
     - name: set hostname
       become: true
-      #hostname: name=ops.{{ bardin_haus_naked_domain }}
-      #hostname: name="ec2-13-56-150-135.us-west-1.compute.amazonaws.com"
       hostname: name="ip-10-0-0-253.us-west-1.compute.internal"
 
     - name: ensure aptitude is installed
@@ -30,13 +28,24 @@
       become: true
       apt_repository: repo="deb http://apt.kubernetes.io/ kubernetes-xenial main" state=present
 
-    - name: ensure the openvpn apt repository is added
+    - name: ensure the openvpn apt repository is removed (use distro openvpn)
       become: true
       apt_repository: state=absent repo='deb http://build.openvpn.net/debian/openvpn/stable xenial main'
+
+    - name: install current docker GPG key
+      become: true
+      apt_key: state=present url=https://download.docker.com/linux/ubuntu/gpg id=0EBFCD88
+
+    - name: ensure the docker apt repository is added
+      become: true
+      apt_repository: state=present repo='deb https://download.docker.com/linux/ubuntu xenial stable'
 
     - name: update and safe upgrade apt-get packages
       become: true
       apt: update_cache=true cache_valid_time=60 upgrade=safe
+
+    #- become: true
+    #  shell: apt-get remove -y docker-ce docker.io runc
 
     - name: install main system packages (1/2)
       apt: pkg={{ item }} state=present
@@ -90,7 +99,6 @@
         - libcgroup1
         - libpam-cgfs
         - ca-certificates
-        - docker.io
         - kubelet
         - kubeadm
         - kubectl
@@ -105,6 +113,7 @@
         - swig
         - python-m2crypto
         - python-urllib3
+        - docker-ce=17.03.2~ce-0~ubuntu-xenial
 
     - name: add ubuntu to docker group
       become: true
@@ -116,36 +125,34 @@
         - kube-config.yml
         - weave-kube-1.10.yml
 
-    #- name: reset kubeadm
-    #  become: true
-    #  shell: kubeadm reset
+    - name: reset kubeadm
+      become: true
+      shell: kubeadm reset
 
-    #- name: init kubeadm
-    #  become: true
-    #  shell: kubeadm init --config /var/tmp/kube-config.yml | tee -a /var/log/kubeadm-init.log
+    - name: init kubeadm
+      become: true
+      shell: kubeadm init | tee -a /var/log/kubeadm-init.log
 
-    #- file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
-    #  become: true
+    - file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+      become: true
 
-    #- name: install kubectl config
-    #  become: true
-    #  copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
+    - name: install kubectl config
+      become: true
+      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
 
-    ## https://www.weave.works/docs/net/latest/kube-addon/#install
-    #- name: install network
-    #  become: true
-    #  shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.10.yml
+    # https://www.weave.works/docs/net/latest/kube-addon/#install
+    - name: install network
+      become: true
+      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.10.yml
 
-    ## https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
-    #- name: allow scheduling on master node
-    #  become: true
-    #  shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
+    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
+    - name: allow scheduling on master node
+      become: true
+      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
 
-    #- shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
-    #  become: true
-    #  register: init
-
-    #- debug: msg={{ init.stdout.split('\n') }}
+    - shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
+      become: true
+      register: init
 
     - name: install sysctl.conf
       become: true
@@ -281,3 +288,5 @@
     #- name: restart openpvn service
     #  become: true
     #  service: name=openvpn state=restarted enabled=true
+
+    - debug: msg={{ init.stdout.split('\n') }}

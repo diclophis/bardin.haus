@@ -16,3 +16,13 @@ key-direction 1
 single-session
 inactive 3600
 cipher AES-256-CBC
+
+#NOTE: this routes _all_ traffic through tunnel
+# redirect-gateway def1
+
+#NOTE: disables pulling routes
+# route-nopull
+
+#NOTE: this routes weave traffic back through the tunnel
+#IMPORTANT!
+route 10.96.0.0 255.255.255.0

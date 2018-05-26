@@ -174,3 +174,9 @@ tmp-dir "/etc/openvpn/tmp"
 push "route 10.0.0.0 255.255.0.0"
 reneg-sec 0
 tls-version-min "1.2"
+
+#NOTE: this routes all client traffic back through tunnel
+#BROKEN?
+# push "redirect-gateway def1"
+# push "remote-gateway 13.56.150.135"
+# push "dhcp-option DNS 8.8.8.8"

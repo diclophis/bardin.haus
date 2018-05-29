@@ -40,12 +40,16 @@
       become: true
       apt_repository: state=present repo='deb https://download.docker.com/linux/ubuntu xenial stable'
 
+    - name: reset kubeadm
+      become: true
+      shell: (which kubeadm && kubeadm reset) || true
+
+    - become: true
+      shell: apt-get remove -y docker-ce docker.io runc
+
     - name: update and safe upgrade apt-get packages
       become: true
       apt: update_cache=true cache_valid_time=60 upgrade=safe
-
-    #- become: true
-    #  shell: apt-get remove -y docker-ce docker.io runc
 
     - name: install main system packages (1/2)
       apt: pkg={{ item }} state=present
@@ -114,6 +118,7 @@
         - python-m2crypto
         - python-urllib3
         - docker-ce=17.03.2~ce-0~ubuntu-xenial
+        - nginx-core
 
     - name: add ubuntu to docker group
       become: true
@@ -124,10 +129,6 @@
       with_items:
         - kube-config.yml
         - weave-kube-1.10.yml
-
-    - name: reset kubeadm
-      become: true
-      shell: kubeadm reset
 
     - name: init kubeadm
       become: true

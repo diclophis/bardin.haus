@@ -120,6 +120,14 @@
         - docker-ce=17.03.2~ce-0~ubuntu-xenial
         - nginx-core
 
+    - name: copy nginx config
+      become: true
+      template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf mode=700
+
+    - name: reload nginx
+      become: true
+      service: name=nginx state=reloaded
+
     - name: add ubuntu to docker group
       become: true
       user: name=ubuntu append=true groups=docker

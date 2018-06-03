@@ -1,2 +1,2 @@
 ansible/*.retry
-ansible/files/vpn.bardin.haus.ovpn
+ansible/files/*.ovpn

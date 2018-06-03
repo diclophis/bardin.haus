@@ -95,7 +95,7 @@ client-to-client
 # CERTIFICATE/KEY PAIRS FOR EACH CLIENT,
 # EACH HAVING ITS OWN UNIQUE "COMMON NAME",
 # UNCOMMENT THIS LINE OUT.
-duplicate-cn
+# duplicate-cn
 
 # The keepalive directive causes ping-like
 # messages to be sent back and forth over
@@ -180,3 +180,5 @@ tls-version-min "1.2"
 # push "redirect-gateway def1"
 # push "remote-gateway 13.56.150.135"
 # push "dhcp-option DNS 8.8.8.8"
+
+client-config-dir /etc/openvpn/ccd

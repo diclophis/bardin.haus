@@ -1,0 +1,24 @@
+---
+- name: create self-signed key
+  become: true
+  command: creates=/etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.key openssl genrsa -out /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.key 2048
+
+- name: create self-signed csr
+  become: true
+  shell: creates=/etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.csr openssl req -new -out /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.csr -key /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.key -config /etc/ssl/private/wildcard.conf -extensions for_client_req -subj "/C=US/ST=Oregon/L=Portland/O=OPENVPN-CLIENT/CN={{ item.cn }}"
+
+- name: create self-signed cert client
+  become: true
+  command: creates=/etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.pem openssl ca -in /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.csr -out /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.pem -config /etc/ssl/private/wildcard.conf -policy policy_anything -batch -passin pass:01234567890123456789 -extensions for_client_req
+
+- name: Create ovpn file
+  become: true
+  command: /usr/local/bin/package-certs.sh /var/tmp/base.ovpn /usr/local/share/ca-certificates/ca.bardin.haus.crt /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.pem /etc/ssl/private/{{ item.cn }}.vpn.bardin.haus.key /etc/ssl/private/tls-auth.key /var/tmp/{{ item.cn }}.vpn.bardin.haus.ovpn
+
+- name: copy ovpn file into ansible workstation
+  become: true
+  fetch: src=/var/tmp/{{ item.cn }}.vpn.bardin.haus.ovpn dest='files/{{ item.cn }}.vpn.bardin.haus.ovpn' flat=yes
+
+- name: install ccd file for ip reservation
+  become: true
+  template: src=ccd.j2 dest=/etc/openvpn/ccd/{{ item.cn }}

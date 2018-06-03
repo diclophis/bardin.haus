@@ -163,8 +163,8 @@ items:
                     fieldRef:
                       apiVersion: v1
                       fieldPath: spec.nodeName
-                #- name: IPALLOC_RANGE
-                #  value: "192.168.50.0/24"
+                - name: IPALLOC_RANGE
+                  value: "192.168.50.0/24"
               image: 'weaveworks/weave-kube:2.3.0'
               livenessProbe:
                 httpGet:

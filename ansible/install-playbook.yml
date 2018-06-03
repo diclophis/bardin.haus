@@ -140,7 +140,7 @@
 
     - name: init kubeadm
       become: true
-      shell: kubeadm init | tee -a /var/log/kubeadm-init.log
+      shell: kubeadm init --pod-network-cidr 192.168.50.0/24 | tee -a /var/log/kubeadm-init.log
 
     - file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
       become: true
@@ -171,9 +171,16 @@
       become: true
       command: /sbin/sysctl -p
 
+    - become: true
+      file: dest=/etc/openvpn/ccd state=directory owner=nobody group=nogroup
+
     - name: install openvpn config
       become: true
       template: src=openvpn-server.conf.j2 dest=/etc/openvpn/server.conf
+
+    - name: install openvpn config reservations
+      become: true
+      template: src=ipp.txt.j2 dest=/etc/openvpn/ipp.txt
 
     - name: copy iptables rules
       become: true
@@ -191,15 +198,20 @@
         - /etc/openvpn/tmp
       when: false
 
-    - name: temp reset hard tokens for openvpn, if this ran.. the tokens are gone
+    - become: true
+      copy: src=package-certs.sh dest=/usr/local/bin/package-certs.sh mode=700
+
+    - name: Install base ovpn config for clients
+      become: true
+      template: src=base.ovpn.j2 dest=/var/tmp/base.ovpn mode=0700
+
+    - name: temp reset hard tokens for openvpn
       become: true
       shell: rm -Rf {{ item }}
       with_items:
-        - /etc/ssl/private/vpn.bardin.haus.key
-        - /etc/ssl/private/vpn.bardin.haus.csr
-        - /etc/ssl/private/vpn.bardin.haus.pem
+        - /etc/ssl/private/*vpn.bardin.haus*
         - /etc/ssl/CA
-        - /var/tmp/vpn.bardin.haus.ovpn
+        - /var/tmp/*vpn.bardin.haus.ovpn
       when: true
 
     - name: create the directories to hold the CA certificate and related files
@@ -243,17 +255,15 @@
       command: update-ca-certificates --fresh
 
     #### CLIENT
-    - name: create self-signed key
-      become: true
-      command: creates=/etc/ssl/private/vpn.bardin.haus.key openssl genrsa -out /etc/ssl/private/vpn.bardin.haus.key 2048
-
-    - name: create self-signed csr
-      become: true
-      shell: creates=/etc/ssl/private/vpn.bardin.haus.csr openssl req -new -out /etc/ssl/private/vpn.bardin.haus.csr -key /etc/ssl/private/vpn.bardin.haus.key -config /etc/ssl/private/wildcard.conf -extensions for_client_req -subj "/C=US/ST=Oregon/L=Portland/O=OPENVPN-CLIENT/CN=BARDIN"
-
-    - name: create self-signed cert client
-      become: true
-      command: creates=/etc/ssl/private/vpn.bardin.haus.pem openssl ca -in /etc/ssl/private/vpn.bardin.haus.csr -out /etc/ssl/private/vpn.bardin.haus.pem -config /etc/ssl/private/wildcard.conf -policy policy_anything -batch -passin pass:01234567890123456789 -extensions for_client_req
+    - include: create-client.yml
+      with_items:
+        - { cn: sidecar1, ip: 10.142.0.2 }
+        - { cn: sidecar2, ip: 10.142.0.3 }
+        - { cn: kangaroo1, ip: 10.142.0.4 }
+        - { cn: kangaroo2, ip: 10.142.0.5 }
+        - { cn: kangaroo3, ip: 10.142.0.6 }
+        - { cn: kangaroo4, ip: 10.142.0.7 }
+        - { cn: kangaroo5, ip: 10.142.0.8 }
 
     ##### SERVER
     - name: create self-signed key
@@ -275,27 +285,12 @@
       become: true
       shell: creates=/etc/ssl/private/tls-auth.key /usr/sbin/openvpn --genkey --secret /etc/ssl/private/tls-auth.key
 
-    - name: Install base ovpn config for clients
+    - name: restore iptables rules
       become: true
-      template: src=base.ovpn.j2 dest=/var/tmp/base.ovpn mode=0700
+      shell: "iptables-restore < /etc/openvpn/iptables.rules"
 
-    - become: true
-      copy: src=package-certs.sh dest=/usr/local/bin/package-certs.sh mode=700
-
-    - name: Create ovpn file
+    - name: restart openpvn service
       become: true
-      command: /usr/local/bin/package-certs.sh /var/tmp/base.ovpn /usr/local/share/ca-certificates/ca.bardin.haus.crt /etc/ssl/private/vpn.bardin.haus.pem /etc/ssl/private/vpn.bardin.haus.key /etc/ssl/private/tls-auth.key /var/tmp/vpn.bardin.haus.ovpn
-
-    - name: copy ovpn file into ansible workstation
-      become: true
-      fetch: src=/var/tmp/vpn.bardin.haus.ovpn dest='files/vpn.bardin.haus.ovpn' flat=yes
-
-    #- name: restore iptables rules
-    #  become: true
-    #  shell: "iptables-restore < /etc/openvpn/iptables.rules"
-
-    #- name: restart openpvn service
-    #  become: true
-    #  service: name=openvpn state=restarted enabled=true
+      service: name=openvpn state=restarted enabled=true
 
     - debug: msg={{ init.stdout.split('\n') }}

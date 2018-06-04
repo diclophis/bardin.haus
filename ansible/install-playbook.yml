@@ -3,8 +3,6 @@
   vars_files:
     - vars/bardin-haus.yml
   tasks:
-
-# baseline
     - name: set hostname
       become: true
       hostname: name="ip-10-0-0-253.us-west-1.compute.internal"
@@ -132,36 +130,7 @@
       become: true
       user: name=ubuntu append=true groups=docker
 
-    - name: install kube-config
-      copy: src={{ item }} dest=/var/tmp/{{ item }}
-      with_items:
-        - kube-config.yml
-        - weave-kube-1.10.yml
 
-    - name: init kubeadm
-      become: true
-      shell: kubeadm init --pod-network-cidr 192.168.50.0/24 | tee -a /var/log/kubeadm-init.log
-
-    - file: dest=/home/{{ ansible_ssh_user }}/.kube owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
-      become: true
-
-    - name: install kubectl config
-      become: true
-      copy: remote_src=true src=/etc/kubernetes/admin.conf dest=/home/{{ ansible_ssh_user }}/.kube/config owner={{ ansible_ssh_user }} group={{ ansible_ssh_user }}
-
-    # https://www.weave.works/docs/net/latest/kube-addon/#install
-    - name: install network
-      become: true
-      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl apply -f /var/tmp/weave-kube-1.10.yml
-
-    # https://kubernetes.io/docs/getting-started-guides/kubeadm/#master-isolation
-    - name: allow scheduling on master node
-      become: true
-      shell: KUBECONFIG=/home/{{ ansible_ssh_user }}/.kube/config kubectl taint nodes --all node-role.kubernetes.io/master-
-
-    - shell: grep -i 'kubeadm\ join\|dns' /var/log/kubeadm-init.log
-      become: true
-      register: init
 
     - name: install sysctl.conf
       become: true
@@ -256,14 +225,7 @@
 
     #### CLIENT
     - include: create-client.yml
-      with_items:
-        - { cn: sidecar1, ip: 10.142.0.2 }
-        - { cn: sidecar2, ip: 10.142.0.3 }
-        - { cn: kangaroo1, ip: 10.142.0.4 }
-        - { cn: kangaroo2, ip: 10.142.0.5 }
-        - { cn: kangaroo3, ip: 10.142.0.6 }
-        - { cn: kangaroo4, ip: 10.142.0.7 }
-        - { cn: kangaroo5, ip: 10.142.0.8 }
+      with_items: nodes
 
     ##### SERVER
     - name: create self-signed key
@@ -292,5 +254,3 @@
     - name: restart openpvn service
       become: true
       service: name=openvpn state=restarted enabled=true
-
-    - debug: msg={{ init.stdout.split('\n') }}

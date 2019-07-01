@@ -1,0 +1,17 @@
+## TODO: refactor this into thor half of 
+#TODO: 3xx redirect example
+
+Wkndr.camp { |sl|
+  sl.get('/') { |ids_from_path, mab|
+    mab.html5 do
+      mab.head { mab.title "bardin.haus" }
+      mab.body do
+        mab.h1 "bardin.haus"
+        mab.ul do
+          mab.li "maze.bardin.haus"
+          mab.li "wkndr.computer"
+        end
+      end
+    end
+  }
+}

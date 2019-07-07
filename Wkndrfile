@@ -8,8 +8,17 @@ Wkndr.camp { |sl|
       mab.body do
         mab.h1 "bardin.haus"
         mab.ul do
-          mab.li "maze.bardin.haus"
-          mab.li "wkndr.computer"
+          mab.li do
+            mab.a(:href => "https://maze.bardin.haus/") do
+              "maze"
+            end
+          end
+
+          mab.li do
+            mab.a(:href => "https://wkndr.computer/") do
+              "wkndr.computer"
+            end
+          end
         end
       end
     end

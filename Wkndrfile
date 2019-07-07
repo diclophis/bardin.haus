@@ -2,7 +2,7 @@
 #TODO: 3xx redirect example
 
 Wkndr.camp { |sl|
-  sl.get('/foo') { |ids_from_path, mab|
+  sl.get('/') { |ids_from_path, mab|
     mab.html5 do
       mab.head { mab.title "bardin.haus" }
       mab.body do

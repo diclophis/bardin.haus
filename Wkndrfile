@@ -1,28 +1,27 @@
-## TODO: refactor this into thor half of 
-#TODO: 3xx redirect example
+#
 
-Wkndr.camp { |sl|
-  sl.get('/') { |ids_from_path|
-    mab = Markaby::Builder.new
-    mab.html5 do
-      mab.head { mab.title "bardin.haus" }
-      mab.body do
-        mab.h1 "bardin.haus"
-        mab.ul do
-          mab.li do
-            mab.a(:href => "https://maze.bardin.haus/") do
-              "maze"
-            end
-          end
+Wkndr.server_side { |server|
+  server.live("/", "bardin.haus") do |cn, phr, mab|
+    mab.h1 "bardin.haus"
 
-          mab.li do
-            mab.a(:href => "https://wkndr.computer/") do
-              "wkndr.computer"
-            end
-          end
+    mab.ul do
+      mab.li do
+        mab.a(:href => "https://maze.bardin.haus/") do
+          "maze"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://wkndr.computer/") do
+          "wkndr.computer"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://copypasta.cloud/") do
+          "copypasta.cloud"
         end
       end
     end
-    mab.to_s
-  }
+  end
 }

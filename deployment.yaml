@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bardin-haus
+  labels:
+    app: bardin-haus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bardin-haus
+  template:
+    metadata:
+      labels:
+        app: bardin-haus
+    spec:
+      volumes: []
+      containers:
+      - name: main
+        image: bardin.haus:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/var/lib/wkndr/release/wkndr.mruby", "--server=/var/lib/wkndr/public", "--no-client"]
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: 100M
+            cpu: 200m
+          requests:
+            memory: 100M
+            cpu: 100m
+        volumeMounts: []
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bardin-haus-service
+spec:
+  type: NodePort
+  selector:
+    app: bardin-haus
+  ports:
+  - protocol: TCP
+    name: app
+    port: 8000
+    nodePort: 32041
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: bardin-haus-vhost
+  annotations:
+    ingress.class: wkndr
+spec:
+  rules:
+  - host: bardin.haus
+    http:
+      paths:
+      - backend:
+          serviceName: bardin-haus-service
+          servicePort: 8000

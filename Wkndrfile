@@ -2,12 +2,14 @@
 
 Wkndr.server_side { |server|
   server.live("/", "bardin.haus") do |cn, phr, mab|
-    mab.h1 "bardin.haus"
+    mab.a(:href => "https://bardin.haus/") do
+      mab.h1 "bardin.haus"
+    end
 
     mab.ul do
       mab.li do
         mab.a(:href => "https://maze.bardin.haus/") do
-          "maze"
+          "chicken-maze.run"
         end
       end
 

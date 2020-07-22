@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+@bootstrap = image {
+  stage "bootstrap", "wkndr:latest"
+
+  command("COPY") {
+    "Wkndrfile /var/lib/wkndr/"
+  }
+
+  command("COPY") {
+    "public/* /var/lib/wkndr/public/"
+  }
+}

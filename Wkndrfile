@@ -8,7 +8,7 @@ Wkndr.server_side { |server|
 
     mab.ul do
       mab.li do
-        mab.a(:href => "https://maze.bardin.haus/") do
+        mab.a(:href => "https://chicken-maze.run/") do
           "chicken-maze.run"
         end
       end

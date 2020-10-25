@@ -20,8 +20,26 @@ Wkndr.server_side { |gl, server|
       end
 
       mab.li do
+        mab.a(:href => "https://webdav.bardin.haus/") do
+          "webdav.bardin.haus"
+        end
+      end
+
+      mab.li do
         mab.a(:href => "https://copypasta.cloud/") do
           "copypasta.cloud"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://glsl-qwqz.bardin.haus/") do
+          "glsl-qwqz.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://risingcode.com/") do
+          "risingcode.com"
         end
       end
     end

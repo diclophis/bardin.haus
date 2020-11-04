@@ -38,6 +38,18 @@ Wkndr.server_side { |gl, server|
       end
 
       mab.li do
+        mab.a(:href => "https://wordsearch.bardin.haus/") do
+          "wordsearch.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://mandelbrot.bardin.haus/") do
+          "mandelbrot.bardin.haus"
+        end
+      end
+
+      mab.li do
         mab.a(:href => "https://copypasta.cloud/") do
           "copypasta.cloud"
         end

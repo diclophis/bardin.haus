@@ -26,6 +26,18 @@ Wkndr.server_side { |gl, server|
       end
 
       mab.li do
+        mab.a(:href => "https://projectwiki.bardin.haus/") do
+          "projectwiki.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://attalos.bardin.haus/") do
+          "attalos.bardin.haus"
+        end
+      end
+
+      mab.li do
         mab.a(:href => "https://copypasta.cloud/") do
           "copypasta.cloud"
         end

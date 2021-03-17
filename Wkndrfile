@@ -66,6 +66,12 @@ Wkndr.server_side { |gl, server|
           "risingcode.com"
         end
       end
+
+      mab.li do
+        mab.a(:href => "https://sig.bardin.haus/") do
+          "sig.bardin.haus"
+        end
+      end
     end
   end
 }

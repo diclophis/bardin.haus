@@ -84,6 +84,18 @@ Wkndr.server_side { |gl, server|
           "age-of-discovery.bardin.haus"
         end
       end
+
+      mab.li do
+        mab.a(:href => "https://rkdio.bardin.haus/") do
+          "rkdio.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://runctl.bardin.haus/") do
+          "runctl.bardin.haus"
+        end
+      end
     end
   end
 }

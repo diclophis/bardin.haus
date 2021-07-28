@@ -96,6 +96,12 @@ Wkndr.server_side { |gl, server|
           "runctl.bardin.haus"
         end
       end
+
+      mab.li do
+        mab.a(:href => "https://bxpk.bardin.haus/") do
+          "bxpk.bardin.haus"
+        end
+      end
     end
   end
 }

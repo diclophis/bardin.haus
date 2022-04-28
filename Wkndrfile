@@ -20,8 +20,86 @@ Wkndr.server_side { |gl, server|
       end
 
       mab.li do
+        mab.a(:href => "https://webdav.bardin.haus/") do
+          "webdav.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://projectwiki.bardin.haus/") do
+          "projectwiki.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://attalos.bardin.haus/") do
+          "attalos.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://wordsearch.bardin.haus/") do
+          "wordsearch.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://mandelbrot.bardin.haus/") do
+          "mandelbrot.bardin.haus"
+        end
+      end
+
+      mab.li do
         mab.a(:href => "https://copypasta.cloud/") do
           "copypasta.cloud"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://glsl-qwqz.bardin.haus/") do
+          "glsl-qwqz.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://risingcode.com/") do
+          "risingcode.com"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://sig.bardin.haus/") do
+          "sig.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://stonks.bardin.haus/") do
+          "stonks.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://age-of-discovery.bardin.haus/") do
+          "age-of-discovery.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://rkdio.bardin.haus/") do
+          "rkdio.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://runctl.bardin.haus/") do
+          "runctl.bardin.haus"
+        end
+      end
+
+      mab.li do
+        mab.a(:href => "https://bxpk.bardin.haus/") do
+          "bxpk.bardin.haus"
         end
       end
     end

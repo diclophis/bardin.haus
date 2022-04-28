@@ -8,6 +8,6 @@
   }
 
   command("COPY") {
-    "public/chicken-maze-prototype /var/lib/wkndr/public/chicken-maze-prototype"
+    "public /var/lib/wkndr/public"
   }
 }

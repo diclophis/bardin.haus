@@ -1,6 +1,6 @@
 #
 
-Wkndr.server_side { |gl, server|
+Wkndr.server_side("main") { |gl, server|
   server.live("/", "bardin.haus") do |cn, phr, mab|
     mab.a(:href => "https://bardin.haus/") do
       mab.h1 "bardin.haus #{Sysrandom.random}"
